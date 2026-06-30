@@ -1,57 +1,101 @@
+from app.memory import add_message, get_recent_messages
 from app.models import get_model_config
 
 
 SYSTEM_PROMPT = "You are a helpful AI assistant. Answer clearly and practically."
 
 
-def build_prompt(model_key: str, user_message: str) -> str:
+def format_history(messages: list[dict]) -> str:
+    if not messages:
+        return "No previous conversation."
+
+    formatted_messages = []
+
+    for message in messages:
+        role = message["role"]
+        content = message["content"]
+
+        if role == "user":
+            formatted_messages.append(f"User: {content}")
+        elif role == "assistant":
+            formatted_messages.append(f"Assistant: {content}")
+
+    return "\n".join(formatted_messages)
+
+
+def build_prompt(model_key: str, user_message: str, conversation_id: str) -> str:
     model_config = get_model_config(model_key)
     prompt_style = model_config["prompt_style"]
 
+    recent_messages = get_recent_messages(conversation_id, limit=6)
+    history_text = format_history(recent_messages)
+
     if prompt_style == "llama":
-        return build_llama_prompt(user_message)
+        return build_llama_prompt(user_message, history_text)
 
     if prompt_style == "granite":
-        return build_granite_prompt(user_message)
+        return build_granite_prompt(user_message, history_text)
 
     if prompt_style == "mistral":
-        return build_mistral_prompt(user_message)
+        return build_mistral_prompt(user_message, history_text)
 
     return user_message
 
 
-def build_llama_prompt(user_message: str) -> str:
-    """
-    Central place for Llama prompt formatting.
+def build_llama_prompt(user_message: str, history_text: str) -> str:
+    return f"""
+{SYSTEM_PROMPT}
 
-    Do not blindly add special tokens here unless the Watsonx model endpoint
-    requires raw prompt-template formatting.
-    """
-    return f"{SYSTEM_PROMPT}\n\nUser: {user_message}\nAssistant:"
+Previous conversation:
+{history_text}
 
+Current user message:
+{user_message}
 
-def build_granite_prompt(user_message: str) -> str:
-    """
-    Central place for Granite prompt formatting.
-
-    IBM Granite 4 has its own chat-template behavior. Keep this centralized.
-    """
-    return f"{SYSTEM_PROMPT}\n\nUser: {user_message}\nAssistant:"
+Assistant:
+""".strip()
 
 
-def build_mistral_prompt(user_message: str) -> str:
-    """
-    Central place for Mistral prompt formatting.
+def build_granite_prompt(user_message: str, history_text: str) -> str:
+    return f"""
+{SYSTEM_PROMPT}
 
-    Mistral instruct models often use instruction formatting, but do not force
-    tokens unless required by the Watsonx serving API.
-    """
-    return f"{SYSTEM_PROMPT}\n\nUser: {user_message}\nAssistant:"
+Previous conversation:
+{history_text}
+
+Current user message:
+{user_message}
+
+Assistant:
+""".strip()
 
 
-def generate_response(model: str, message: str) -> str:
-    prompt = build_prompt(model_key=model, user_message=message)
+def build_mistral_prompt(user_message: str, history_text: str) -> str:
+    return f"""
+{SYSTEM_PROMPT}
+
+Previous conversation:
+{history_text}
+
+Current user message:
+{user_message}
+
+Assistant:
+""".strip()
+
+
+def generate_response(model: str, message: str, conversation_id: str) -> str:
+    prompt = build_prompt(
+        model_key=model,
+        user_message=message,
+        conversation_id=conversation_id
+    )
 
     # Temporary response.
     # Next step: send `prompt` to the selected Watsonx model through LangChain.
-    return f"Temporary response using model '{model}' with prompt:\n\n{prompt}"
+    answer = f"Temporary response using model '{model}' with prompt:\n\n{prompt}"
+
+    add_message(conversation_id, "user", message)
+    add_message(conversation_id, "assistant", answer)
+
+    return answer
