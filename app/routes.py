@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, request
 from app.models import get_available_models, is_valid_model
-
+from app.chat import generate_response
 main = Blueprint("main", __name__)
 
 
@@ -37,8 +37,37 @@ def chat():
             "available_models": [m["key"] for m in get_available_models()]
         }), 400
 
+    answer = generate_response(model=model, message=message)
+
     return jsonify({
         "model": model,
         "message": message,
-        "answer": f"Temporary response from {model}: you said '{message}'"
+        "answer": answer
+    })
+
+
+
+@main.get("/chat-test")
+def chat_test():
+    model = request.args.get("model")
+    message = request.args.get("message")
+
+    if not model:
+        return jsonify({"error": "Missing query parameter: model"}), 400
+
+    if not message:
+        return jsonify({"error": "Missing query parameter: message"}), 400
+
+    if not is_valid_model(model):
+        return jsonify({
+            "error": f"Unsupported model: {model}",
+            "available_models": [m["key"] for m in get_available_models()]
+        }), 400
+
+    answer = generate_response(model=model, message=message)
+
+    return jsonify({
+        "model": model,
+        "message": message,
+        "answer": answer
     })
