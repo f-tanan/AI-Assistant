@@ -92,11 +92,10 @@ def generate_response(model: str, message: str, conversation_id: str) -> str:
         conversation_id=conversation_id
     )
 
-    llm = get_llm(model)
-
     add_message(conversation_id, "user", message)
 
     try:
+        llm = get_llm(model)
         answer = llm.invoke(prompt)
     except Exception as e:
         return f"Model request failed: {str(e)}"

@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AI Assistant</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <h1>AI Assistant</h1>
+            <p>Select a model and start chatting.</p>
+        </header>
+
+        <section class="controls">
+            <label for="modelSelect">Model</label>
+            <select id="modelSelect">
+                <option value="">Loading models...</option>
+            </select>
+
+            <button id="clearButton">Clear Chat</button>
+        </section>
+
+        <section id="chatBox" class="chat-box"></section>
+
+        <section class="input-area">
+            <textarea id="messageInput" placeholder="Type your message here..."></textarea>
+            <button id="sendButton">Send</button>
+        </section>
+    </div>
+
+    <script src="/static/js/chat.js"></script>
+</body>
+</html>

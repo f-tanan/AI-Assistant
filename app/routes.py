@@ -1,11 +1,14 @@
-from flask import Blueprint, jsonify, request
-
+from flask import Blueprint, jsonify, request, render_template
 from app.chat import generate_response
 from app.memory import clear_conversation, get_messages
 from app.models import get_available_models, is_valid_model
 
 main = Blueprint("main", __name__)
 
+
+@main.get("/")
+def home():
+    return render_template("index.html")
 
 @main.get("/health")
 def health():
