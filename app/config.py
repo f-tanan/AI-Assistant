@@ -11,7 +11,7 @@ class Config:
     WATSONX_URL = os.getenv("WATSONX_URL")
 
     # Model IDs
-    LLAMA_MODEL_ID = "meta-llama/llama-3-2-11b-vision-instruct-fp8"
+    LLAMA_MODEL_ID = "meta-llama/llama-3-3-70b-instruct"
     GRANITE_MODEL_ID = "ibm/granite-4-h-small"
     MISTRAL_MODEL_ID = "mistralai/mistral-small-3-1-24b-instruct-2503"
 
