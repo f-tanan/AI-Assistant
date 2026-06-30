@@ -71,3 +71,14 @@ def chat_test():
         "message": message,
         "answer": answer
     })
+
+
+@main.get("/config-check")
+def config_check():
+    from flask import current_app
+
+    return jsonify({
+        "watsonx_apikey_loaded": bool(current_app.config.get("WATSONX_APIKEY")),
+        "watsonx_project_id_loaded": bool(current_app.config.get("WATSONX_PROJECT_ID")),
+        "watsonx_url_loaded": bool(current_app.config.get("WATSONX_URL")),
+    })
