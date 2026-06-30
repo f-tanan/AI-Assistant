@@ -1,3 +1,4 @@
+from app.llm import get_llm
 from app.memory import add_message, get_recent_messages
 from app.models import get_model_config
 
@@ -91,11 +92,15 @@ def generate_response(model: str, message: str, conversation_id: str) -> str:
         conversation_id=conversation_id
     )
 
-    # Temporary response.
-    # Next step: send `prompt` to the selected Watsonx model through LangChain.
-    answer = f"Temporary response using model '{model}' with prompt:\n\n{prompt}"
+    llm = get_llm(model)
 
     add_message(conversation_id, "user", message)
+
+    try:
+        answer = llm.invoke(prompt)
+    except Exception as e:
+        return f"Model request failed: {str(e)}"
+
     add_message(conversation_id, "assistant", answer)
 
     return answer
